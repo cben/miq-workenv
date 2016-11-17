@@ -1,0 +1,26 @@
+#!/usr/bin/env fish
+set dir (dirname (status --current-filename))
+if [ (count $argv) -ne 1 ]
+  set name (status --current-filename)
+  echo "Usage: $name <branch_name> [<start-point>] [<git branch options...>]"
+  exit 2
+end
+set branch $argv[1]
+
+git branch $argv  # support extra git branch params
+or echo "^^ That's OK, can use an existing branch."
+
+git worktree add $dir/$branch $branch
+
+ln -s -v $dir/Gemfile.dev.rb $dir/$branch/
+ln -s -v $dir/.agignore $dir/$branch/
+
+sed -e "s/vmdb_development/vmdb_development_$branch/" \
+    -e "s/vmdb_production/vmdb_production_$branch/" \
+    -e "s/vmdb_test/vmdb_test_$branch<%= ENV['TEST_ENV_NUMBER'] %>/" \
+    $dir/$branch/config/database.pg.yml > $dir/$branch/config/database.yml
+diff -u $dir/$branch/config/database.pg.yml $dir/$branch/config/database.yml
+
+echo "== Next steps =="
+echo "cd $dir/$branch/"
+echo "bin/setup"
