@@ -3,9 +3,12 @@
 Of little interest but Version control ALL the things!
 
 I use multiple branches checked out below ~/miq/ using "git worktree", configured to use separate databases.
-MKBRANCH script helps with that.  "Install" by:
+I have a manageiq checkout at ~/miq/MAINTREE and this repo at ~/miq/WORKENV;
+MKBRANCH script run from any existing manageiq checkout creates a new one.
 
-    ln -s -v ../miq-workenv/{.*,*} ~/miq/
+To remove a checkout, `rm -rf` it then:
+
+    git worktree prune -v
 
 [1]: https://github.com/ManageIQ/manageiq
 
