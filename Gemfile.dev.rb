@@ -25,6 +25,8 @@ gem "rubocop-git", require: false
 gem "haml-lint", require: false
 gem "launchy"  # TODO: https://stackoverflow.com/questions/35383550/how-to-automatically-launch-browser-when-rails-server-starts
 
+gem "listen"
+
 # performance & mem
 gem "manageiq-performance", :git => "https://github.com/ManageIQ/manageiq-performance.git"
 gem "stackprof", require: false
