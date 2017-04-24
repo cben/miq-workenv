@@ -1,4 +1,5 @@
 #!/usr/bin/env fish
+
 # Assumes this script & files live in a parallel subdir,
 # e.g. ~/miq/WORKENV/ alongside ~/miq/<branch> manageiq checkouts.
 set workenv_dir (dirname (realpath (status --current-filename)))  # ~/miq/WORKENV
@@ -6,10 +7,10 @@ set dir (dirname $workenv_dir)                                    # ~/miq
 set workenv_relative ../(basename $workenv_dir)                   # ../WORKENV
 
 if [ (count $argv) -lt 1 ]
-  set name (status --current-filename)
-  echo "Usage: $name <branch_name> [<start-point>] [<git branch options...>]"
-  echo "Should be run from an existing checkout directory."
-  exit 2
+    set name (status --current-filename)
+    echo "Usage: $name <branch_name> [<start-point>] [<git branch options...>]"
+    echo "Should be run from an existing checkout directory."
+    exit 2
 end
 set branch $argv[1]
 
