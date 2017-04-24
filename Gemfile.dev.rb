@@ -14,13 +14,19 @@ Dir["#{File.realpath(__dir__)}/plugins/*"].each do |plugin_dir|
 end
 
 gem "pry"
-gem "pry-doc"
+gem "pry-doc", require: false
 gem "pry-rails"
 gem "pry-remote"
 gem "pry-byebug"
 gem "byebug"
 gem "rb-readline"  # for irb
 #gem "rubocop"
-gem "rubocop-git"
-gem "haml-lint"
+gem "rubocop-git", require: false
+gem "haml-lint", require: false
 gem "launchy"  # TODO: https://stackoverflow.com/questions/35383550/how-to-automatically-launch-browser-when-rails-server-starts
+
+# performance & mem
+gem "manageiq-performance", :git => "https://github.com/ManageIQ/manageiq-performance.git"
+gem "stackprof", require: false
+gem "derailed", require: false
+
