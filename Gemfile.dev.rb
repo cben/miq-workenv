@@ -1,8 +1,16 @@
-# https://github.com/ManageIQ/guides/blob/master/developer_setup/classic_ui_split.md
-
-# Per https://github.com/manageiq/guides/blob/master/developer_setup/classic_ui_split.md
-unless dependencies.detect { |d| d.name == "manageiq-ui-classic" }
-  gem "manageiq-ui-classic", :path => File.realpath("../manageiq-ui-classic", __dir__)
+# See https://github.com/manageiq/guides/blob/master/developer_setup/plugins.md
+Dir["#{File.realpath(__dir__)}/plugins/*"].each do |plugin_dir|
+  gem_name = File.basename(plugin_dir)
+  if defined?(override_gem)
+    puts "override_gem #{gem_name}, :path => #{plugin_dir}" if ENV['DEBUG']
+    override_gem gem_name, :path => plugin_dir
+  else
+    # assume old, evaluated at start of Gemfile
+    unless dependencies.detect { |d| d.name == gem_name }
+      puts "gem #{gem_name}, :path => #{plugin_dir}" if ENV['DEBUG']
+      gem gem_name, :path => plugin_dir
+    end
+  end
 end
 
 gem "pry"
