@@ -13,21 +13,35 @@ if [ (count $argv) -lt 1 ]
     exit 2
 end
 set branch $argv[1]
+set worktree $dir/$branch
 
-git branch $argv  # support extra git branch params
+git branch $argv # support extra git branch params
 or echo "^^ That's OK, can use an existing branch."
 
-git worktree add $dir/$branch $branch
+git worktree add $worktree $branch
 
-ln -s -v $workenv_relative/Gemfile.dev.rb $dir/$branch/
-ln -s -v $workenv_relative/.agignore $dir/$branch/
+for plugin in (ls $dir/PLUGINS/)
+    # TODO: defer creating plugin branches?  but "master is already checked out in worktree foo".
+    # TODO: by default branch off plugin branches in current dir??  probably messy idea.
+    pushd $dir/PLUGINS/$plugin
+    git branch $argv # support extra git branch params
+    or echo "^^ That's OK, can use an existing branch."
+
+    git worktree add $worktree/plugins/$plugin $branch
+    popd
+    # Link plugin back to use parent manageiq dir
+    ln -s -v ../../../.. $worktree/plugins/$plugin/spec/manageiq
+end
+
+ln -s -v $workenv_relative/Gemfile.dev.rb $worktree/
+ln -s -v $workenv_relative/.agignore $worktree/
 
 sed -e "s/vmdb_development/vmdb_development_$branch/" \
     -e "s/vmdb_production/vmdb_production_$branch/" \
-    -e "s/vmdb_test/vmdb_test_$branch<%= ENV['TEST_ENV_NUMBER'] %>/" \
-    $dir/$branch/config/database.pg.yml > $dir/$branch/config/database.yml
-diff -u $dir/$branch/config/database.pg.yml $dir/$branch/config/database.yml
+    -e "s/vmdb_test\(<%= ENV['TEST_ENV_NUMBER'] %>\)?/vmdb_test_$branch<%= ENV['TEST_ENV_NUMBER'] %>/" \
+    $worktree/config/database.pg.yml > $worktree/config/database.yml
+diff -u $worktree/config/database.pg.yml $worktree/config/database.yml
 
 echo "== Next steps =="
-echo "cd $dir/$branch/"
+echo "cd $worktree/"
 echo "bin/setup"
