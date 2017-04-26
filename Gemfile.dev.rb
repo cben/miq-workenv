@@ -3,7 +3,14 @@ Dir["#{File.realpath(__dir__)}/plugins/*"].each do |plugin_dir|
   gem_name = File.basename(plugin_dir)
   if defined?(override_gem)
     puts "override_gem #{gem_name}, :path => #{plugin_dir}" if ENV['DEBUG']
-    override_gem gem_name, :path => plugin_dir
+    begin
+      override_gem gem_name, :path => plugin_dir
+    rescue => e
+      # A plugin with spec/manageiq pointing to core with >1 plugins may trip up here.
+      # Assume plugins/* are all legit, and just skip.
+      # TODO cleaner solution in override_gem?
+      raise unless e.message =~ /Trying to override unknown gem/
+    end
   else
     # assume old, evaluated at start of Gemfile
     unless dependencies.detect { |d| d.name == gem_name }
@@ -32,3 +39,4 @@ gem "manageiq-performance", :git => "https://github.com/ManageIQ/manageiq-perfor
 gem "stackprof", require: false
 gem "derailed", require: false
 
+#gem "kubeclient", path: "/home/bpaskinc/kubeclient"
