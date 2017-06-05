@@ -13,9 +13,10 @@ if [ (count $argv) -lt 1 ]
     exit 2
 end
 set branch $argv[1]
+set git_branch_extra_args $argv[2..-1]
 set worktree $dir/$branch
 
-git branch $argv # support extra git branch params
+git branch $branch $git_branch_extra_args
 or echo "^^ That's OK, can use an existing branch."
 
 git worktree add $worktree $branch
@@ -24,7 +25,7 @@ for plugin in (ls $dir/PLUGINS/)
     # TODO: defer creating plugin branches?  but "master is already checked out in worktree foo".
     # TODO: by default branch off plugin branches in current dir??  probably messy idea.
     pushd $dir/PLUGINS/$plugin
-    git branch $argv # support extra git branch params
+    git branch $branch $git_branch_extra_args
     or echo "^^ That's OK, can use an existing branch."
 
     git worktree add $worktree/plugins/$plugin $branch
