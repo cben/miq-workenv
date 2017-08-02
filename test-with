@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+GITHUB_ME = 'cben'           # TODO
+GITHUB_MY_REMOTE = GITHUB_ME # TODO some people use 'origin'
+
+USAGE = <<END
+Usage:
+  cd .../manageiq-providers-foo
+  git status     # typically you want this done off master.
+  # Stop if you have staged changes!
+
+  # If not already forked & enabled, https://travis-ci.org/profile
+  hub fork
+  travis enable --store-repo #{GITHUB_ME}/manageiq-providers-foo
+
+  test-with https://github.com/ManageIQ/manageiq/pull/NNN
+
+    # This script creates & pushes a commit that Travis will run against
+    # that PR head (TODO: find way to run against merge-commit-to-be)
+END
+
+require 'json'
+require 'pp'
+require 'shellwords'
+
+require 'rest-client'
+
+def parse_pr(org, repo, pr_number)
+  # https://stackoverflow.com/questions/15096331/github-api-how-to-find-the-branches-of-a-pull-request
+  api_pr_url = "https://api.github.com/repos/#{org}/#{repo}/pulls/#{pr_number}"
+  pr_data = JSON.parse(RestClient.get(api_pr_url))
+  unless pr_data['mergeable']
+    STDERR.puts 'CAVEAT: PR umergearble, this runs tests against PR head so will not reflect that.'
+  end
+
+  #manageiq_clone_url = pr_data['head']['repo']['clone_url']  # null :-(
+  fork, branch = pr_data['head']['label'].split(':')
+
+  {fork: fork, branch: branch, pr_number: pr_number, pr_description: pr_data['body']}
+end
+
+def system!(*args)
+  puts "+ #{args.shelljoin}"  # bash -x style
+  system(*args) or raise "command returned #{$?}"
+end
+
+def patch_setup_manageiq(fork:, branch:, pr_number:, **_rest)
+  test_branch = "with-manageiq-#{pr_number}"
+  system! 'git', 'checkout', '-B', test_branch
+
+  text = IO.read('bin/setup')
+  text.sub!(%r{github.com/ManageIQ/manageiq}i, "github.com/#{fork}/manageiq")
+  text.sub!(%r{master}, branch)
+  IO.write('bin/setup', text)
+
+  system! 'git', 'add', 'bin/setup'
+  system! 'git', 'commit', '-m', "test with https://github.com/ManageIQ/manageiq/pull/#{pr_number} (#{fork}/manageiq branch #{branch})"
+  system! 'git', 'show'
+  system! 'git', 'push', '-f', GITHUB_MY_REMOTE
+
+  puts "Expect build to start on https://travis-ci.org/#{GITHUB_ME}/#{Pathname.getwd.basename}/builds"
+
+  # TODO: checkout prev branch
+end
+
+# TODO: ability to test with other plugin PRs.
+# plugin_name = 'manageiq-providers-amazon'
+#
+#echo "gem '#{plugin_name}', :git => 'https://github.com/cben/#{plugin_name}', :branch => 'master'"
+
+pr_url, = ARGV
+
+if %r{^https://github.com/(?<org>[^/]+)/manageiq/pull/(?<pr_number>\d+)/?$}i =~ pr_url
+  manageiq_pr = parse_pr(org, 'manageiq', pr_number)
+  pp manageiq_pr
+  patch_setup_manageiq(manageiq_pr)
+else
+  STDERR.write USAGE
+  exit(2)
+end
