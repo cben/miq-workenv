@@ -1,3 +1,17 @@
+# Silence messages
+def override_gem(name, *args)
+  if dependencies.any?
+    raise "Trying to override unknown gem #{name}" unless (dependency = dependencies.find { |d| d.name == name })
+    dependencies.delete(dependency)
+
+    # calling_file = caller_locations.detect { |loc| !loc.path.include?("lib/bundler") }.path
+    gem(name, *args).tap do
+      # Bundler::UI::Shell.new.warn "** override_gem: #{name}, #{args.inspect}, caller: #{calling_file}" unless ENV["RAILS_ENV"] == "production"
+    end
+  end
+end
+
+
 # See https://github.com/manageiq/guides/blob/master/developer_setup/plugins.md
 dir = __dir__
 dir = File.dirname(dir) if File.basename(dir) == 'bundler.d'
