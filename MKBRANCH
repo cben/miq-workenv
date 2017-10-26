@@ -31,7 +31,9 @@ for plugin in (ls $dir/PLUGINS/)
     git worktree add $worktree/plugins/$plugin $branch
     popd
     # Link plugin back to use parent manageiq dir
-    ln -s -v ../../.. $worktree/plugins/$plugin/spec/manageiq
+    if [ $plugin != manageiq-schema ]
+        ln -s -v ../../.. $worktree/plugins/$plugin/spec/manageiq
+    end
 end
 
 ln -s -v ../$workenv_relative/Gemfile.dev.rb $worktree/bundler.d/
