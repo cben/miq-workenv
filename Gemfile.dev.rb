@@ -1,5 +1,5 @@
 # Silence messages
-def override_gem(name, *args)
+def my_override_gem(name, *args)
   if dependencies.any?
     raise "Trying to override unknown gem #{name}" unless (dependency = dependencies.find { |d| d.name == name })
     dependencies.delete(dependency)
@@ -19,9 +19,9 @@ Dir["#{dir}/plugins/*"].each do |plugin_dir|
   plugin_dir = File.realpath(plugin_dir)
   gem_name = File.basename(plugin_dir)
   if defined?(override_gem)
-    puts "override_gem #{gem_name}, :path => #{plugin_dir}" if ENV['DEBUG']
+    puts "my_override_gem #{gem_name}, :path => #{plugin_dir}" if ENV['DEBUG']
     begin
-      override_gem gem_name, :path => plugin_dir
+      my_override_gem gem_name, :path => plugin_dir
     rescue => e
       # A plugin with spec/manageiq pointing to core with >1 plugins may trip up here.
       # Assume plugins/* are all legit, and just skip.
