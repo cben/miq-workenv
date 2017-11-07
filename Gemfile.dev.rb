@@ -1,8 +1,9 @@
 # Silence messages
 def my_override_gem(name, *args)
   if dependencies.any?
-    raise "Trying to override unknown gem #{name}" unless (dependency = dependencies.find { |d| d.name == name })
-    dependencies.delete(dependency)
+    dependency = dependencies.find { |d| d.name == name }
+    # raise "Trying to override unknown gem #{name}" unless dependency
+    dependencies.delete(dependency) if dependency
 
     # calling_file = caller_locations.detect { |loc| !loc.path.include?("lib/bundler") }.path
     gem(name, *args).tap do
