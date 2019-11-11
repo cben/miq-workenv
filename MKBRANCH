@@ -19,15 +19,20 @@ set worktree $dir/$branch
 git branch $branch $git_branch_extra_args
 or echo "^^ That's OK, can use an existing branch."
 
+pushd $dir/MAINTREE
+# detach head to avoid "master is already checked out in worktree foo".
+git checkout HEAD~0
 git worktree add $worktree $branch
+popd
 
 for plugin in (ls $dir/PLUGINS/)
-    # TODO: defer creating plugin branches?  but "master is already checked out in worktree foo".
-    # TODO: by default branch off plugin branches in current dir??  probably messy idea.
+    # TODO: by default branch off plugin branches in current dir?
     pushd $dir/PLUGINS/$plugin
     git branch $branch $git_branch_extra_args
     or echo "^^ That's OK, can use an existing branch."
 
+    # detach head to avoid "master is already checked out in worktree foo".
+    git checkout HEAD~0
     git worktree add $worktree/plugins/$plugin $branch
     popd
     # Link plugin back to use parent manageiq dir
