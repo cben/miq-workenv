@@ -5,7 +5,7 @@ def my_override_gem(name, *args)
     # raise "Trying to override unknown gem #{name}" unless dependency
     dependencies.delete(dependency) if dependency
 
-    # calling_file = caller_locations.detect { |loc| !loc.path.include?("lib/bundler") }.path
+    calling_file = caller_locations.detect { |loc| !loc.path.include?("lib/bundler") }.path
     gem(name, *args).tap do
       # Bundler::UI::Shell.new.warn "** override_gem: #{name}, #{args.inspect}, caller: #{calling_file}" unless ENV["RAILS_ENV"] == "production"
     end
@@ -27,6 +27,7 @@ Dir["#{dir}/plugins/*"].each do |plugin_dir|
       # A plugin with spec/manageiq pointing to core with >1 plugins may trip up here.
       # Assume plugins/* are all legit, and just skip.
       # TODO cleaner solution in override_gem?
+      puts e
       raise unless e.message =~ /Trying to override unknown gem/
     end
   else
@@ -44,7 +45,9 @@ gem "rb-readline"  # for irb
 gem "pry-rails"
 gem "pry-remote"
 gem "pry-byebug"
-gem "byebug"
+# gem "byebug"  now included in manageiq Gemfile
+gem "awesome_print"
+
 #gem "rubocop"
 gem "rubocop-git", require: false
 gem "haml-lint", require: false
